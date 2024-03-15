@@ -1,1 +1,105 @@
-# Postfix-Installation-and-Configuration-on-Linux
+# Postfix Installation and Configuration
+
+## 1. Installation:
+- Install Postfix and mailx packages:
+  ```bash
+  sudo yum install postfix
+  ```
+  ```bash
+  sudo yum install mailx
+  ```
+
+## 2. Backup Configuration:
+- Create a backup of the main Postfix configuration file:
+  ```bash
+  sudo cp /etc/postfix/main.cf /etc/postfix/main.cf_bkp
+  ```
+
+## 3. Configuration:
+- Check the hostname:
+  ```bash
+  hostname -f
+  ```
+- Edit the main Postfix configuration file:
+  ```bash
+  sudo vi /etc/postfix/main.cf
+  ```
+- Add or modify the following settings:
+  ```
+  relayhost = [smtp.gmail.com]:587
+  myhostname = your_hostname
+  ```
+- Comment out the line:
+  ```
+  # #smtp_tls_security_level = may
+  ```
+- Add the following lines at the end of the file:
+  ```
+  #Location of sasl_passwd we saved
+  smtp_sasl_password_maps = hash:/etc/postfix/sasl/sasl_passwd
+
+	#Enables SASL authentication for postfix
+  smtp_sasl_auth_enable = yes
+  smtp_tls_security_level = encrypt
+	
+	#Disallow methods that allow anonymous authentication
+  smtp_sasl_security_options = noanonymous
+  ```
+
+## 4. Create SASL Password File:
+- Create a directory for SASL configuration:
+  ```bash
+  sudo mkdir /etc/postfix/sasl
+  ```
+- Create and edit the SASL password file:
+  ```bash
+  sudo vi /etc/postfix/sasl/sasl_passwd
+  ```
+- Add the following line, replacing "Your_G-Email_address" and "abcd qwer asdf zcxv" with your Gmail address and generated app password:
+  ```
+  [smtp.gmail.com]:587 Your_G-Email_address:abcd qwer asdf zcxv
+  ```
+- Save the file.
+
+## 5. Creating App-Specific Password for Gmail:
+- Go to your Google Account: [Google Account](https://myaccount.google.com/)
+- Click on "Security" & Enable 2-Step Verification
+- Search App passwords & Create a New App-Specific Password
+- Create
+- Copy the Generated Password (e.g., abcd qwer asdf zcxv).
+- Use the Password for Configuration.
+
+## 6. Convert SASL Password File:
+- Convert the SASL password file into a database file:
+  ```bash
+  sudo postmap /etc/postfix/sasl/sasl_passwd
+  ```
+- Set appropriate permissions:
+  ```bash
+  sudo chmod 600 /etc/postfix/sasl/*
+  sudo chown root:root /etc/postfix/sasl/*
+  ```
+
+## 7. Start Postfix Service:
+- Start the Postfix service:
+  ```bash
+  sudo systemctl start postfix.service
+  ```
+- Check the status:
+  ```bash
+  sudo systemctl status postfix.service
+  ```
+
+## 8. Test Mail:
+- Send a test email:
+  ```bash
+  sudo echo "Test Mail" | mail -s "Subject" recipient_email@example.com
+  ```
+
+## 9. Troubleshoot:
+- Check mail logs for any errors:
+  ```bash
+  sudo less /var/log/maillog
+  ```
+
+```
